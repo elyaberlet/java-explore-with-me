@@ -19,7 +19,7 @@ services:
       - POSTGRES_USER=stats
       - POSTGRES_PASSWORD=stats
 
-  ewm-main-service:
+  ewm-service:
     build: ewm-main-service
     ports:
       - "8080:8080"
