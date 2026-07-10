@@ -1,12 +1,15 @@
 package ru.practicum.statistic.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.statistic.dto.EndpointHitDto;
 import ru.practicum.statistic.dto.ViewStatsDto;
+import ru.practicum.statistic.exception.BadRequestException;
 import ru.practicum.statistic.service.StatsService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,11 +29,15 @@ public class StatsController {
 
     @GetMapping("/stats")
     public List<ViewStatsDto> getStats(
-            @RequestParam(name = "start") String start,
-            @RequestParam(name = "end") String end,
+            @RequestParam(name = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam(name = "end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(name = "uris", required = false) List<String> uris,
-            @RequestParam(name = "unique", defaultValue = "false") Boolean unique
-    ) {
+            @RequestParam(name = "unique", defaultValue = "false") Boolean unique) {
+
+        if (start.isAfter(end)) {
+            throw new BadRequestException("Start date must be before end date");
+        }
+
         return statsService.getStats(start, end, uris, unique);
     }
 }
