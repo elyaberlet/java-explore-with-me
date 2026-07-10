@@ -2,6 +2,7 @@ package ru.practicum.statistic;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+
 import org.springframework.web.client.RestTemplate;
 import ru.practicum.statistic.dto.EndpointHitDto;
 
