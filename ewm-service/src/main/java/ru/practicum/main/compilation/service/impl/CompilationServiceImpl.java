@@ -96,7 +96,6 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setTitle(updateRequest.getTitle());
         }
 
-        compilation = compilationRepository.save(compilation);
         return compilationMapper.toDto(compilation);
     }
 }

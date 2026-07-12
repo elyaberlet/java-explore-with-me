@@ -39,7 +39,7 @@ public class PrivateEventController {
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto addEvent(
             @PathVariable Long userId,
-            @Valid @RequestBody NewEventDto newEventDto) throws BadRequestException, org.apache.coyote.BadRequestException {
+            @Valid @RequestBody NewEventDto newEventDto) {
         return eventService.addEvent(userId, newEventDto);
     }
 
@@ -54,7 +54,7 @@ public class PrivateEventController {
     public EventFullDto updateEvent(
             @PathVariable Long userId,
             @PathVariable Long eventId,
-            @Valid @RequestBody UpdateEventUserRequest updateRequest) throws BadRequestException, org.apache.coyote.BadRequestException {
+            @Valid @RequestBody UpdateEventUserRequest updateRequest) {
         return eventService.updateUserEvent(userId, eventId, updateRequest);
     }
 

@@ -3,6 +3,7 @@ package ru.practicum.main.event.service.impl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,9 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     private final StatsClient statsClient;
 
+    @Value("${spring.application.name:ewm-main-service}")
+    private String appName;
+
     @Override
     public List<EventShortDto> getPublicEvents(
             String text,
@@ -53,12 +57,10 @@ public class EventServiceImpl implements EventService {
             int size,
             HttpServletRequest request) {
 
-        // Валидация: rangeEnd должен быть после rangeStart
         if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("rangeEnd must be after rangeStart");
         }
 
-        // Валидация: sort
         if (sort != null && !sort.equals("EVENT_DATE") && !sort.equals("VIEWS")) {
             throw new BadRequestException("Sort must be EVENT_DATE or VIEWS");
         }
@@ -77,7 +79,7 @@ public class EventServiceImpl implements EventService {
         );
 
         EndpointHitDto hitDto = new EndpointHitDto();
-        hitDto.setApp("ewm-main-service");
+        hitDto.setApp(appName);
         hitDto.setUri(request.getRequestURI());
         hitDto.setIp(request.getRemoteAddr());
         hitDto.setTimestamp(LocalDateTime.now());
@@ -106,7 +108,7 @@ public class EventServiceImpl implements EventService {
         }
 
         EndpointHitDto hitDto = new EndpointHitDto();
-        hitDto.setApp("ewm-main-service");
+        hitDto.setApp(appName);
         hitDto.setUri(request.getRequestURI());
         hitDto.setIp(request.getRemoteAddr());
         hitDto.setTimestamp(LocalDateTime.now());
@@ -197,7 +199,6 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        event = eventRepository.save(event);
         return eventMapper.toFullDto(event);
     }
 
@@ -250,7 +251,6 @@ public class EventServiceImpl implements EventService {
             }
         }
 
-        event = eventRepository.save(event);
         return eventMapper.toFullDto(event);
     }
 
