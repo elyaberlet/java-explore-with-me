@@ -9,7 +9,6 @@ import ru.practicum.statistic.repository.HitRepository;
 import ru.practicum.statistic.service.StatsService;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -17,40 +16,29 @@ import java.util.List;
 public class StatsServiceImpl implements StatsService {
 
     private final HitRepository hitRepository;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public void saveHit(EndpointHitDto dto) {
+    public void saveHit(EndpointHitDto hitDto) {
         Hit hit = new Hit();
-        hit.setApp(dto.getApp());
-        hit.setUri(dto.getUri());
-        hit.setIp(dto.getIp());
-        hit.setTimestamp(dto.getTimestamp());
+        hit.setApp(hitDto.getApp());
+        hit.setUri(hitDto.getUri());
+        hit.setIp(hitDto.getIp());
+        hit.setTimestamp(hitDto.getTimestamp());
         hitRepository.save(hit);
     }
 
     @Override
-    public List<ViewStatsDto> getStats(String start, String end, List<String> uris, Boolean unique) {
-        LocalDateTime startDateTime = LocalDateTime.parse(start, FORMATTER);
-        LocalDateTime endDateTime = LocalDateTime.parse(end, FORMATTER);
-
-        if (startDateTime.isAfter(endDateTime)) {
-            throw new IllegalArgumentException(
-                    "Дата начала (" + start + ") не может быть позже даты конца (" + end + ")"
-            );
-        }
-
-        boolean hasUris = uris != null && !uris.isEmpty();
-        boolean isUnique = Boolean.TRUE.equals(unique);
-
-        if (isUnique) {
-            return hasUris
-                    ? hitRepository.findUniqueStatsWithUris(startDateTime, endDateTime, uris)
-                    : hitRepository.findUniqueStats(startDateTime, endDateTime);
+    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+        if (unique) {
+            if (uris != null && !uris.isEmpty()) {
+                return hitRepository.findUniqueStatsWithUris(start, end, uris);
+            }
+            return hitRepository.findUniqueStats(start, end);
         } else {
-            return hasUris
-                    ? hitRepository.findAllStatsWithUris(startDateTime, endDateTime, uris)
-                    : hitRepository.findAllStats(startDateTime, endDateTime);
+            if (uris != null && !uris.isEmpty()) {
+                return hitRepository.findAllStatsWithUris(start, end, uris);
+            }
+            return hitRepository.findAllStats(start, end);
         }
     }
 }

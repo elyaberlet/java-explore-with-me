@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class StatsClientConfig {
 
-    @Value("${stat-service.url:http://localhost:9090}")
+    @Value("${stat-service.url:http://localhost:9091}")
     private String serverUrl;
 
     @Bean

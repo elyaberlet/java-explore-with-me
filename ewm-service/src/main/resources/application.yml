@@ -1,11 +1,8 @@
-server:
-  port: 9090
-
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:6541/stats_db
-    username: stats
-    password: stats
+    url: jdbc:postgresql://localhost:5432/ewm_db
+    username: ewm
+    password: ewm
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -17,3 +14,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
 
+server:
+  port: 8080
+
+stat-service:
+  url: http://localhost:9090
