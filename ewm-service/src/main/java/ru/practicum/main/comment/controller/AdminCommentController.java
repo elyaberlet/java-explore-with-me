@@ -33,8 +33,7 @@ public class AdminCommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public String deleteComment(@PathVariable Long commentId) {
+    public void deleteComment(@PathVariable Long commentId) {
         commentService.deleteCommentAdmin(commentId);
-        return "Comment deleted by admin";
     }
 }

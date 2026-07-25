@@ -138,8 +138,7 @@ public class CommentServiceImpl implements CommentService {
             throw new BadRequestException("Invalid state action: " + stateAction);
         }
 
-        Comment saved = commentRepository.save(comment);
-        return commentMapper.toDto(saved);
+        return commentMapper.toDto(comment);
     }
 
     @Override
