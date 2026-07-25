@@ -1,0 +1,460 @@
+{
+  "info": {
+    "_postman_id": "comments-collection-final-fixed",
+    "name": "test explore with me - comments",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "45643574"
+  },
+  "item": [
+    {
+      "name": "1. Добавление комментария к опубликованному событию",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        pm.collectionVariables.set('userId', user.id);\n        pm.collectionVariables.set('eventId', publishedEvent.id);\n        console.log('User ID:', user.id, 'Event ID:', publishedEvent.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('Response is JSON', function () { pm.expect(pm.response.headers.get('content-type')).to.include('application/json'); });\npm.test('Has comment id', function () { var jsonData = pm.response.json(); pm.expect(jsonData.id).to.be.a('number'); });\npm.test('State is PENDING', function () { var jsonData = pm.response.json(); pm.expect(jsonData.state).to.eql('PENDING'); });\npm.test('Has text', function () { var jsonData = pm.response.json(); pm.expect(jsonData.text).to.be.a('string'); });\npm.test('Has eventId', function () { var jsonData = pm.response.json(); pm.expect(jsonData.eventId).to.be.a('number'); });\nif (pm.response.code === 200) { var jsonData = pm.response.json(); pm.collectionVariables.set('commentId', jsonData.id); console.log('Comment created:', jsonData.id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"text\": \"Отличное мероприятие!\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}/comments",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}", "events", "{{eventId}}", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Получение комментариев пользователя",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        await api.addComment(user.id, publishedEvent.id, { text: 'Test comment 1' });\n        await api.addComment(user.id, publishedEvent.id, { text: 'Test comment 2' });\n        pm.collectionVariables.set('userId', user.id);\n        console.log('User ID:', user.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('Response is array', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });\npm.test('Has comments', function () { var jsonData = pm.response.json(); pm.expect(jsonData.length).to.be.at.least(1); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}/comments?from=0&size=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}", "comments"],
+          "query": [{ "key": "from", "value": "0" }, { "key": "size", "value": "10" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Обновление комментария",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment = await api.addComment(user.id, publishedEvent.id, { text: 'Original text' });\n        pm.collectionVariables.set('userId', user.id);\n        pm.collectionVariables.set('commentId', comment.id);\n        console.log('Comment ID:', comment.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('Text updated', function () { var jsonData = pm.response.json(); pm.expect(jsonData.text).to.eql('Обновленный текст'); });\npm.test('Id unchanged', function () { var jsonData = pm.response.json(); var expectedId = parseInt(pm.collectionVariables.get('commentId')); pm.expect(jsonData.id).to.eql(expectedId); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"text\": \"Обновленный текст\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}/comments/{{commentId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}", "comments", "{{commentId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Удаление комментария",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment = await api.addComment(user.id, publishedEvent.id, { text: 'Test comment' });\n        pm.collectionVariables.set('userId', user.id);\n        pm.collectionVariables.set('commentId', comment.id);\n        console.log('Comment to delete:', comment.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\nvar text = pm.response.text();\nif (text) {\n    pm.test('Response has success message', function () {\n        pm.expect(text).to.include('Comment deleted');\n    });\n} else {\n    pm.test('Response is empty - OK', function () {\n        pm.expect(text).to.eql('');\n    });\n}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}/comments/{{commentId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}", "comments", "{{commentId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Модерация - Публикация",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment = await api.addComment(user.id, publishedEvent.id, { text: 'Test for publish' });\n        pm.collectionVariables.set('commentId', comment.id);\n        console.log('Comment for publish:', comment.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('State is PUBLISHED', function () { var jsonData = pm.response.json(); pm.expect(jsonData.state).to.eql('PUBLISHED'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/comments/{{commentId}}?stateAction=PUBLISH",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "comments", "{{commentId}}"],
+          "query": [{ "key": "stateAction", "value": "PUBLISH" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Модерация - Отклонение",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment = await api.addComment(user.id, publishedEvent.id, { text: 'Test for reject' });\n        pm.collectionVariables.set('commentId', comment.id);\n        console.log('Comment for reject:', comment.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('State is REJECTED', function () { var jsonData = pm.response.json(); pm.expect(jsonData.state).to.eql('REJECTED'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/comments/{{commentId}}?stateAction=REJECT",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "comments", "{{commentId}}"],
+          "query": [{ "key": "stateAction", "value": "REJECT" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Удаление админом",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment = await api.addComment(user.id, publishedEvent.id, { text: 'Test comment' });\n        pm.collectionVariables.set('commentId', comment.id);\n        console.log('Comment for admin delete:', comment.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\nvar text = pm.response.text();\nif (text) {\n    pm.test('Response has admin delete message', function () {\n        pm.expect(text).to.include('Comment deleted by admin');\n    });\n} else {\n    pm.test('Response is empty - OK', function () {\n        pm.expect(text).to.eql('');\n    });\n}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/comments/{{commentId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "comments", "{{commentId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Получение комментариев события",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment1 = await api.addComment(user.id, publishedEvent.id, { text: 'Comment 1' });\n        await api.publishComment(comment1.id);\n        const comment2 = await api.addComment(user.id, publishedEvent.id, { text: 'Comment 2' });\n        await api.publishComment(comment2.id);\n        pm.collectionVariables.set('eventId', publishedEvent.id);\n        console.log('Event ID:', publishedEvent.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('Response is array', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });\npm.test('All comments are PUBLISHED', function () { var jsonData = pm.response.json(); if (jsonData.length > 0) { jsonData.forEach(function(c) { pm.expect(c.state).to.eql('PUBLISHED'); }); } });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/events/{{eventId}}/comments?from=0&size=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["events", "{{eventId}}", "comments"],
+          "query": [{ "key": "from", "value": "0" }, { "key": "size", "value": "10" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "9. Получение всех комментариев админом",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('Response is array', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/comments?from=0&size=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "comments"],
+          "query": [{ "key": "from", "value": "0" }, { "key": "size", "value": "10" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "10. Фильтр по статусу PENDING",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        await api.addComment(user.id, publishedEvent.id, { text: 'Pending 1' });\n        await api.addComment(user.id, publishedEvent.id, { text: 'Pending 2' });\n        console.log('Pending comments created');\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });\npm.test('Response is array', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });\npm.test('All comments are PENDING', function () { var jsonData = pm.response.json(); if (jsonData.length > 0) { jsonData.forEach(function(c) { pm.expect(c.state).to.eql('PENDING'); }); } });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/comments?state=PENDING&from=0&size=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "comments"],
+          "query": [{ "key": "state", "value": "PENDING" }, { "key": "from", "value": "0" }, { "key": "size", "value": "10" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11. Ошибка - неверное действие",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        const publishedEvent = await api.publishEvent(event.id);\n        const comment = await api.addComment(user.id, publishedEvent.id, { text: 'Test comment' });\n        pm.collectionVariables.set('commentId', comment.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400', function () { pm.response.to.have.status(400); });\npm.test('Has error message', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.have.property('message'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/admin/comments/{{commentId}}?stateAction=INVALID",
+          "host": ["{{baseUrl}}"],
+          "path": ["admin", "comments", "{{commentId}}"],
+          "query": [{ "key": "stateAction", "value": "INVALID" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "12. Ошибка - несуществующий комментарий",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });\npm.test('Has error message', function () { var jsonData = pm.response.json(); pm.expect(jsonData).to.have.property('message'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}/comments/99999",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}", "comments", "99999"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "13. Ошибка - комментарий к неопубликованному событию",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const main = async () => {\n    const api = new API(pm);\n    const rnd = new RandomUtils();\n    try {\n        const user = await api.addUser(rnd.getUser());\n        const category = await api.addCategory(rnd.getCategory());\n        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\n        pm.collectionVariables.set('userId', user.id);\n        pm.collectionVariables.set('eventId', event.id);\n        console.log('Unpublished event ID:', event.id);\n    } catch(err) {\n        console.error('Error:', err);\n    }\n};\nconst interval = setInterval(() => {}, 1000);\nsetTimeout(async () => { try { await main(); } finally { clearInterval(interval); } }, 100);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 409', function () { pm.response.to.have.status(409); });\npm.test('Error is CONFLICT', function () { var jsonData = pm.response.json(); pm.expect(jsonData.status).to.eql('CONFLICT'); });\npm.test('Error message about unpublished event', function () { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.include('unpublished'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"text\": \"This should fail\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/{{userId}}/events/{{eventId}}/comments",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "{{userId}}", "events", "{{eventId}}", "comments"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.collectionVariables.set('baseUrl', 'http://localhost:8080');\nAPI = class {\n    constructor(postman, verbose = false, baseUrl = 'http://localhost:8080') {\n        this.baseUrl = baseUrl;\n        this.pm = postman;\n        this._verbose = verbose;\n    }\n    async addUser(user) {\n        return this.post('/admin/users', user);\n    }\n    async addCategory(category) {\n        return this.post('/admin/categories', category);\n    }\n    async addEvent(userId, event) {\n        return this.post('/users/' + userId + '/events', event);\n    }\n    async addComment(userId, eventId, comment) {\n        return this.post('/users/' + userId + '/events/' + eventId + '/comments', comment);\n    }\n    async publishEvent(eventId) {\n        return this.patch('/admin/events/' + eventId, { stateAction: 'PUBLISH_EVENT' });\n    }\n    async publishComment(commentId) {\n        return this.patch('/admin/comments/' + commentId + '?stateAction=PUBLISH', null);\n    }\n    async post(path, body) {\n        return this.sendRequest('POST', path, body);\n    }\n    async patch(path, body) {\n        return this.sendRequest('PATCH', path, body);\n    }\n    async sendRequest(method, path, body = null) {\n        return new Promise((resolve, reject) => {\n            const request = {\n                url: this.baseUrl + path,\n                method: method,\n                body: body ? JSON.stringify(body) : '',\n                header: { 'Content-Type': 'application/json' }\n            };\n            this.pm.sendRequest(request, (error, response) => {\n                if (error || (response.code >= 400 && response.code <= 599)) {\n                    reject(error || response);\n                    return;\n                }\n                if (response.stream.length === 0) {\n                    resolve(null);\n                    return;\n                }\n                try { resolve(response.json()); } catch(e) { resolve(response.text()); }\n            });\n        });\n    }\n};\nRandomUtils = class {\n    constructor() {}\n    getUser() {\n        return { name: pm.variables.replaceIn('{{$randomFullName}}'), email: pm.variables.replaceIn('{{$randomEmail}}') };\n    }\n    getCategory() {\n        return { name: pm.variables.replaceIn('{{$randomWord}}') + Math.floor(Math.random() * 10000) };\n    }\n    getEvent(categoryId) {\n        return {\n            annotation: pm.variables.replaceIn('{{$randomLoremParagraph}}'),\n            category: categoryId,\n            description: pm.variables.replaceIn('{{$randomLoremParagraphs}}'),\n            eventDate: this.getFutureDateTime(),\n            location: { lat: parseFloat(pm.variables.replaceIn('{{$randomLatitude}}')), lon: parseFloat(pm.variables.replaceIn('{{$randomLongitude}}')) },\n            paid: pm.variables.replaceIn('{{$randomBoolean}}'),\n            participantLimit: parseInt(pm.variables.replaceIn('{{$randomInt}}')),\n            requestModeration: pm.variables.replaceIn('{{$randomBoolean}}'),\n            title: pm.variables.replaceIn('{{$randomLoremSentence}}')\n        };\n    }\n    getFutureDateTime() {\n        let moment = require('moment');\n        let m = moment();\n        m.add(5, 'hour');\n        return m.format('YYYY-MM-DD HH:mm:ss');\n    }\n};"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "userId", "value": "" },
+    { "key": "eventId", "value": "" },
+    { "key": "commentId", "value": "" }
+  ]
+}
